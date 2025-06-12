@@ -38,15 +38,64 @@ def data_exploration(df: pd.DataFrame) -> None:
 
 
 
-    def create_database(db_name: str) -> None:
-        """
-        Cria um banco de dados SQLite.
+def create_database(db_name: str) -> None:
+    """
+    Cria um banco de dados SQLite.
 
-        Args:
-            db_name (str): Nome do banco de dados.
-        """
-        conn = sqlite3.connect(db_name) 
-        conn.close()
-        print(f"Database {db_name} created")
+    Args:
+        db_name (str): Nome do banco de dados.
+    """
+    conn = sqlite3.connect(db_name) 
+    conn.close()
+    print(f"Database {db_name} created")
 
 
+def create_table(db_name: str, table_name: str) -> None:
+    """
+    Cria uma tabela no banco de dados SQLite.
+
+    Args:
+        db_name (str): Nome do banco de dados.
+        table_name (str): Nome da tabela.
+    """
+    conn= sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute(f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            year INTEGER,
+            state TEXT,
+            month TEXT,
+            number FLOAT,
+            date TEXT,
+            UNIQUE(year, state, month, date)
+        )
+    """)
+    
+def insert_data(df: pd.DataFrame, db_name: str, table_name: str) -> None:
+    """
+    Insere dados em uma tabela de banco de dados SQLite.
+
+    Args:
+        df (pd.DataFrame): DataFrame do pandas com os dados.
+        db_name (str): Nome do banco de dados.
+        table_name (str): Nome da tabela.
+    """
+    conn = sqlite3.connect(db_name)
+    sql: str = f"""
+        INSERT OR REPLACE INTO {table_name} (year, state, month, number, date)
+        VALUES (?, ?, ?, ?, ?)
+    """
+    for _, row in df.iterrows():
+        conn.execute(sql, (row["year"], row["state"], row["month"], row["number"], row["date"]))
+    conn.commit()
+    print(f"Inserted {len(df)} rows into {table_name}")
+    conn.close()
+    print(f"Data inserted into {table_name} in {db_name}")
+
+def delete_data(): ## DESAFIO
+    #Buscar os dados no SQLite
+    #Percorre todos os dados do SQLite
+    #Para cada linha qie vc percorre, vc verifica se ela existe no seu dataframe do pandas
+    # Se ela não existir, quer dizer que ela foi excluida e vc executa um DELETE FROM
+    #Com um WHERE, passando os dados da linah que vc quer remover
+    ...
